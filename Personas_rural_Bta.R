@@ -22,15 +22,15 @@ Edades<-Edades[order(Edades$Var1,decreasing = FALSE), ]
 
 #Multiproposito
 #Clasificacion de directorios que sean rurales
-Identificacion_mp <- read.csv2("~/Downloads/Identificacion ( Capitulo A)/Identificacion ( Capitulo A).csv", header=FALSE)
+Identificacion_mp <-read.csv2("~/Documents/SDDE/Economía Rural/Caracterizacion/Multiproposito/Modulos/Identificacion ( Capitulo A)/Identificacion ( Capitulo A).csv", header=FALSE)
 name<-Identificacion_mp[1,]
 name<-as.vector(name)
 Identificacion_mp=Identificacion_mp[2:107219,]
 colnames(Identificacion_mp)<-c(name)
-I=Identificacion_mp[which(Identificacion_mp$CLASE=="3"),]
+I=Identificacion_mp[which(Identificacion_mp$CLASE=="3" | Identificacion_mp$CLASE=="2"),]
 
 #Personas
-Personas_mp <- read.csv2("~/Downloads/Composicion del hogar y demografia ( Capitulo E)/Composicion del hogar y demografia ( Capitulo E).csv", header=FALSE)
+Personas_mp <-read.csv2("~/Documents/SDDE/Economía Rural/Caracterizacion/Multiproposito/Modulos/Composicion del hogar y demografia ( Capitulo E)/Composicion del hogar y demografia ( Capitulo E).csv", header=FALSE)
 namepersonas<-Personas_mp[1,]
 namepersonas<-as.vector(namepersonas)
 Personas_mp=Personas_mp[2:319953,]
@@ -49,13 +49,17 @@ Personas_mp[which(Personas_mp$Personas_mp.DIRECTORIO=='101000'),][c(1,2)][1]
 
 for(i in I$DIRECTORIO){
   print(i)
-  k=Personas_mp[which(Personas_mp$Personas_mp.DIRECTORIO==i),]
+  k=Personas_mp[which(Personas_mp$DIRECTORIO==i),]
   clas_rural=rbind(clas_rural,k)
 }
 
+colnames(clas_rural)<-c('DIRECTORIO_PER','DIRECTORIO_HOG','DIRECTORIO',
+                        'NPCEP4','NPCEP5','NPCEP6','NPCEP11A','NPCEP15',
+                        'NPCEP17', 'NPCEP22') 
+
 #Localidad
 Localidad<-c()
-for(i in 1:7239){
+for(i in 1:8027){
   for(j in 1:length(Identificacion_mp$DIRECTORIO)){
     if(clas_rural$DIRECTORIO[i]==Identificacion_mp$DIRECTORIO[j]){
       Localidad<-c(Localidad,I$LOCALIDAD_TEX[i])
@@ -70,6 +74,18 @@ clas_rural_localidad<-cbind(clas_rural,Localidad)
 personas_localidad<-data.frame(table(clas_rural_localidad$Localidad))
 write_xlsx(personas_localidad,"/home/tata/personas_localidad_mp.xlsx")
 
+
+#Municipio que vivia antes
+#1.No habia nacido, 2.En este municipio, 3. En otro municipio 4. En otro pais
+table(clas_rural$NPCEP13)
+
+#Departamento:
+
+dpto_vivia<-data.frame(table(clas_rural$NPCEP13A))
+write_xlsx(dpto_vivia,"/home/tata/departamento_vivia.xlsx")
+municipio_vivia<-data.frame(table(clas_rural$NPCEP13B))
+sum(municipio_vivia$Freq)
+table(clas_rural$NPCEP13C)
 
 ####################################CARACTERIZACION#############################
 #NPCEP4:4.¿Cuántos años cumplidos tiene ... ?
@@ -100,14 +116,10 @@ write_xlsx(personas_localidad,"/home/tata/personas_localidad_mp.xlsx")
 
 
 
-colnames(clas_rural)<-c('DIRECTORIO_PER','DIRECTORIO_HOG','DIRECTORIO',
-                        'NPCEP4','NPCEP5','NPCEP6', 'NPCEP11A','NPCEP15',
-                        'NPCEP17', 'NPCEP22')
+
 
 #Cuantos años tiene cumplidos?
 Edad_mp<-data.frame(table(clas_rural$NPCEP4))
-write_xlsx(Edad_mp,"home/Documents/SDDE/Economia Rural/Caracterizacion/
-           Multiproposito/Edad_mp.xlsx")
 write_xlsx(Edad_mp,"/home/tata/Edad_mp.xlsx")
 
 #Sexo
@@ -117,18 +129,24 @@ write_xlsx(Sexo_mp,"/home/tata/Sexo_mp.xlsx")
 #Parentezco
 Parentezco_mp<-data.frame(table(clas_rural$NPCEP6))
 
-#Mujer Cabeza de hohar
+#Mujer Cabeza de hogar 629
 Mujer<-clas_rural[which(clas_rural$NPCEP5=='2'),]
 Mujer_Cabeza<-Mujer[which(Mujer$NPCEP6=='1'),]
+write_xlsx(Mujer_Cabeza,"/home/tata/mujer_cabeza_mp.xlsx")
 
-#Hombre Cabeza de hogar
+#Mujer cabeza años
+mujer_cabeza_edad<-data.frame(table(Mujer_Cabeza$NPCEP4))
+write_xlsx(mujer_cabeza_edad,"/home/tata/mujer_cabeza_edad.xlsx")
+
+
+#Hombre Cabeza de hogar 1756
 Hombre<-clas_rural[which(clas_rural$NPCEP5=='1'),]
 Hombre_Cabeza<-Mujer[which(Hombre$NPCEP6=='1'),]
-
+write_xlsx(Hombre_Cabeza,"/home/tata/Hombre_cabeza_mp.xlsx")
 
 #Donde nació?
 nacimiento_mp<-data.frame(table(clas_rural$NPCEP11A))
-write_xlsx(Sexo_mp,"/home/tata/nacimiento_mp.xlsx")
+write_xlsx(nacimiento_mp,"/home/tata/nacimiento_mp.xlsx")
 
 #Cual fue la razón para venir a este municipio
 migrar_municipio<-data.frame(table(clas_rural$NPCEP15))
@@ -147,7 +165,7 @@ write_xlsx(edu_padre,"/home/tata/edu_padre.xlsx")
 
 #############################################Salud############################################
 
-Salud_rural_mp<- read.csv2("~/Downloads/Salud ( Capitulo F)/Salud ( Capitulo F).csv", header=FALSE)
+Salud_rural_mp <- read.csv2("~/Documents/SDDE/Economía Rural/Caracterizacion/Multiproposito/Modulos/Salud ( Capitulo F)/Salud ( Capitulo F).csv", header=FALSE)
 namesalud<-Salud_rural_mp[1,]
 namesalud<-as.vector(namesalud)
 Salud_rural_mp=Salud_rural_mp[2:319953,]
@@ -193,11 +211,11 @@ write_xlsx(regimen_salud,"/home/tata/regimen_salud.xlsx")
 #... y el último año o grado aprobado en este nivel?
 #Pregunta abierta
 
-Educacion_rural <- read.csv2("~/Downloads/Educacion (capitulo H)/Educacion (capitulo H).csv", header=FALSE)
-nameeducacion<-Educacion_rural[1,]
+Educacion_rural_mp <- read.csv2("~/Documents/SDDE/Economía Rural/Caracterizacion/Multiproposito/Modulos/Educacion (capitulo H)/Educacion (capitulo H).csv", header=FALSE)
+nameeducacion<-Educacion_rural_mp[1,]
 nameeducacion<-as.vector(nameeducacion)
-Educacion_rural=Educacion_rural[2:301824,]
-colnames(Educacion_rural)<-c(nameeducacion)
+Educacion_rural_mp=Educacion_rural_mp[2:301824,]
+colnames(Educacion_rural_mp)<-c(nameeducacion)
 
 Educacion_rural_mp<-Educacion_rural[,c(1,2,3,6,9)]
 
@@ -214,11 +232,64 @@ Leer<-data.frame(table(Educacion_rural$NPCHP1))
 Leer
 write_xlsx(Leer,"/home/tata/leer.xlsx")
 
+
+#Sabe leer y escribir or sexo
+
+
+mujer_leer<-data.frame()
+for(i in Mujer$DIRECTORIO_PER){
+  f=Educacion_rural[which(Educacion_rural$DIRECTORIO_PER==i),]
+  mujer_leer=rbind(mujer_leer,f)
+}
+
+hombre_leer<-data.frame()
+for(i in Hombre$DIRECTORIO_PER){
+  f=Educacion_rural[which(Educacion_rural$DIRECTORIO_PER==i),]
+  hombre_leer=rbind(hombre_leer,f)
+}
+
+
+
+
+
+
+
+
 Estudios_Alcanzados<-data.frame(table(Educacion_rural$NPCHP4))
-Estudios_Alcanzados
+write_xlsx(Estudios_Alcanzados,"/home/tata/Estudios_Alcanzados.xlsx")
 #NO se tiene un rango para saber a que se refiere cada uno
 
+#Educacion por localidad
+k=c()
+for(i in Educacion_rural$DIRECTORIO){
+  print(i)
+  if(i %in% I$DIRECTORIO){
+    t=I[which(I$DIRECTORIO==i),][10]
+    k=c(k,t)
+  }
+}
 
+
+
+Educacion_rural<-cbind(Educacion_rural,k)
+Educacion_rural$Localidad=k
+
+Sumapaz_educacion<-Educacion_rural[which(Educacion_rural$Localidad=='SUMAPAZ'),]
+CiudadBolivar_educacion<-Educacion_rural[which(Educacion_rural$Localidad=='CIUDAD BOLIVAR'),]
+Otra_educacion<-Educacion_rural[which(Educacion_rural$Localidad=='OTRA LOCALIDAD'),]
+Suba_educacion<-Educacion_rural[which(Educacion_rural$Localidad=='SUBA'),]
+Usme_educacion<-Educacion_rural[which(Educacion_rural$Localidad=='USME'),]
+
+niveledu_sumapaz<-data.frame(table(Sumapaz_educacion$NPCHP4))
+niveledu_CB<-data.frame(table(CiudadBolivar_educacion$NPCHP4))
+niveledu_otra<-data.frame(table(Otra_educacion$NPCHP4))
+niveledu_suba<-data.frame(table(Suba_educacion$NPCHP4))
+niveledu_usme<-data.frame(table(Usme_educacion$NPCHP4))
+
+write_xlsx(niveledu_sumapaz,"/home/tata/niveleducativosumapaz.xlsx")
+write_xlsx(niveledu_CB,"/home/tata/niveleducativoCB.xlsx")
+write_xlsx(niveledu_suba,"/home/tata/niveleducativosuba.xlsx")
+write_xlsx(niveledu_usme,"/home/tata/niveleducativousme.xlsx")
 
 
 
@@ -253,8 +324,7 @@ Estudios_Alcanzados
 #NPCKP24A: 24. ¿Cuánto recibió?
 #Pregunta abierta
 
-trabajo_rural <- read.csv2("~/Downloads/Fuerza de trabajo  (capitulo K)/Fuerza de trabajo  (capítulo K).csv", header=FALSE)
-
+trabajo_rural <- read.csv2("~/Documents/SDDE/Economía Rural/Caracterizacion/Multiproposito/Modulos/Fuerza de trabajo  (capitulo K)/Fuerza de trabajo  (capítulo K).csv", header=FALSE)
 nametrabajo<-trabajo_rural[1,]
 nametrabajo<-as.vector(nametrabajo)
 trabajo_rural=trabajo_rural[2:281183,]
@@ -286,4 +356,9 @@ write_xlsx(empleo,"/home/tata/empleo.xlsx")
 
 remuneracion<-data.frame(table(Trabajo_rural$NPCKP24A))
 remuneracion 
+write_xlsx(remuneracion,"/home/tata/remuneracion.xlsx")
 
+
+
+factor(I$LOCALIDAD_TEX)
+Educacion_rural
